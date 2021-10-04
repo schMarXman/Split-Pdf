@@ -84,5 +84,13 @@ namespace Split
                 }
             }
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel dc)
+            {
+                dc.OnWindowLoaded?.Invoke();
+            }
+        }
     }
 }

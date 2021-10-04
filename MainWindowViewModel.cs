@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
+using System.Runtime.Serialization;
+using System.Text.Json;
 
 namespace Split
 {
@@ -63,11 +66,28 @@ namespace Split
             OpenPdfCommand = new RelayCommand(OpenPdfDialog);
             ProcessPdfCommand = new RelayCommand(ProcessPdf, () => { return !string.IsNullOrEmpty(SelectedOutputDirectory) && SelectedPdf != null && !processRunning; });
             SelectOutputDirectoryCommand = new RelayCommand(SelectOutputDirectory);
+            OnWindowLoaded += AdditionalInit;
 
             SelectedOutputDirectory = Properties.Settings.Default.OutputDirectory;
             ZipDocuments = Properties.Settings.Default.ZipDocuments;
             FileNamePattern = Properties.Settings.Default.FileNamePattern;
             ZipFileNamePattern = Properties.Settings.Default.ZipFileNamePattern;
+        }
+
+        private void AdditionalInit()
+        {
+            CheckForUpdate();
+        }
+
+        public void CheckForUpdate()
+        {
+            WebClient wc = new WebClient();
+            wc.Headers.Add("User-Agent: Other");
+
+            // unfinished
+            var json = wc.DownloadString("https://api.github.com/repos/schmarxman/split-pdf/releases/latest");
+
+            var jsonDoc = JsonSerializer.Deserialize<dynamic>(json);
         }
 
         public static MainWindowViewModel Instance
@@ -95,6 +115,8 @@ namespace Split
                 RaisePropertyChanged();
             }
         }
+
+        public Action OnWindowLoaded { get; private set; }
 
         public string FileNamePatternTooltip
         {
@@ -281,12 +303,16 @@ namespace Split
                     {
                         JobNumber = splitName[0];
                         ProductNumber = splitName[1];
+                        Format = splitName[2];
+                        Orientation = splitName[3];
                     }
                     catch (Exception)
                     {
                         // Name does not contain JobNumber and/or ProductNumber.
                     }
                 }
+
+                SelectedOutputDirectory = info.DirectoryName;
             }
         }
 
