@@ -1,26 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using GalaSoft.MvvmLight;
+﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
-using System.Runtime.Serialization;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace Split
 {
@@ -29,7 +23,7 @@ namespace Split
         // Default filename pattern: {Auftragsnummer}_{Produktnummer}_{Format}_{Ausrichtung}_S{Index}_Bog{Bogenanzahl}
 
         /*
-         * Formate: 
+         * Formate:
          * 350x500
          * 320x450
          * 478x
@@ -78,49 +72,6 @@ namespace Split
             ZipFileNamePattern = Properties.Settings.Default.ZipFileNamePattern;
         }
 
-        private void InitWindowLoaded()
-        {
-            CheckForUpdate();
-        }
-
-        public void CheckForUpdate()
-        {
-            new TaskFactory().StartNew(() =>
-            {
-                var version = typeof(MainWindowViewModel).Assembly.GetName().Version;
-                string downloadUrl = "https://github.com/schmarxman/split-pdf/releases/latest";
-
-                WebClient wc = new WebClient();
-                wc.Headers.Add("User-Agent: Other");
-
-                string json = "";
-                try
-                {
-                    json = wc.DownloadString("https://api.github.com/repos/schmarxman/split-pdf/releases/latest");
-                }
-                catch (Exception)
-                {
-                }
-
-                if (!string.IsNullOrEmpty(json))
-                {
-                    var tag = json.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(x => x.Contains("tag_name"));
-                    if (!string.IsNullOrEmpty(tag))
-                    {
-                        int start = tag.IndexOf("v") + 1;
-                        var remoteVersion = new Version(tag.Substring(start, tag.LastIndexOf("\"") - start));
-                        if (remoteVersion > version)
-                        {
-                            if (MessageBox.Show("Eine neue Version ist verfügbar. Jetzt herunterladen? (Öffnet den Browser)", "Update verfügbar", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
-                            {
-                                Process.Start(downloadUrl);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
         public static MainWindowViewModel Instance
         {
             get
@@ -146,8 +97,6 @@ namespace Split
                 RaisePropertyChanged();
             }
         }
-
-        public Action OnWindowLoaded { get; private set; }
 
         public string FileNamePatternTooltip
         {
@@ -184,6 +133,8 @@ namespace Split
             }
         }
 
+        public Action OnWindowLoaded { get; private set; }
+
         public RelayCommand OpenPdfCommand { get; private set; }
 
         public string Orientation
@@ -212,7 +163,9 @@ namespace Split
                 };
             }
         }
+
         public RelayCommand ProcessPdfCommand { get; private set; }
+
         public string ProductNumber
         {
             get { return productNumber; }
@@ -295,6 +248,44 @@ namespace Split
             }
         }
 
+        public void CheckForUpdate()
+        {
+            new TaskFactory().StartNew(() =>
+            {
+                var version = typeof(MainWindowViewModel).Assembly.GetName().Version;
+                string downloadUrl = "https://github.com/schmarxman/split-pdf/releases/latest";
+
+                WebClient wc = new WebClient();
+                wc.Headers.Add("User-Agent: Other");
+
+                string json = "";
+                try
+                {
+                    json = wc.DownloadString("https://api.github.com/repos/schmarxman/split-pdf/releases/latest");
+                }
+                catch (Exception)
+                {
+                }
+
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var tag = json.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(x => x.Contains("tag_name"));
+                    if (!string.IsNullOrEmpty(tag))
+                    {
+                        int start = tag.IndexOf("v") + 1;
+                        var remoteVersion = new Version(tag.Substring(start, tag.LastIndexOf("\"") - start));
+                        if (remoteVersion > version)
+                        {
+                            if (MessageBox.Show("Eine neue Version ist verfügbar. Jetzt herunterladen? (Öffnet den Browser)", "Update verfügbar", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            {
+                                Process.Start(downloadUrl);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         public string GetFilenameFromPattern(string pattern, int bogenCount, int index)
         {
             string filename = pattern;
@@ -357,6 +348,11 @@ namespace Split
                 }
             }
         }
+
+        private void InitWindowLoaded()
+        {
+            CheckForUpdate();
+        }
         private void OpenPdfDialog()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog()
@@ -372,7 +368,7 @@ namespace Split
                 {
                     OpenPdf(openFileDialog.FileName);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // todo error handling
                 }
@@ -516,7 +512,9 @@ namespace Split
                 return MainWindowViewModel.Instance.GetFilenameFromPattern(MainWindowViewModel.Instance.FileNamePattern, bogenCount, Index) + ".pdf";
             }
         }
+
         public int Index { get; private set; }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             if (PropertyChanged != null)
