@@ -18,6 +18,9 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using System.Runtime.Serialization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace Split
 {
@@ -63,10 +66,11 @@ namespace Split
 
         public MainWindowViewModel()
         {
+            OnWindowLoaded += InitWindowLoaded;
+
             OpenPdfCommand = new RelayCommand(OpenPdfDialog);
             ProcessPdfCommand = new RelayCommand(ProcessPdf, () => { return !string.IsNullOrEmpty(SelectedOutputDirectory) && SelectedPdf != null && !processRunning; });
             SelectOutputDirectoryCommand = new RelayCommand(SelectOutputDirectory);
-            OnWindowLoaded += AdditionalInit;
 
             SelectedOutputDirectory = Properties.Settings.Default.OutputDirectory;
             ZipDocuments = Properties.Settings.Default.ZipDocuments;
@@ -74,20 +78,47 @@ namespace Split
             ZipFileNamePattern = Properties.Settings.Default.ZipFileNamePattern;
         }
 
-        private void AdditionalInit()
+        private void InitWindowLoaded()
         {
             CheckForUpdate();
         }
 
         public void CheckForUpdate()
         {
-            WebClient wc = new WebClient();
-            wc.Headers.Add("User-Agent: Other");
+            new TaskFactory().StartNew(() =>
+            {
+                var version = typeof(MainWindowViewModel).Assembly.GetName().Version;
+                string downloadUrl = "https://github.com/schmarxman/split-pdf/releases/latest";
 
-            // unfinished
-            var json = wc.DownloadString("https://api.github.com/repos/schmarxman/split-pdf/releases/latest");
+                WebClient wc = new WebClient();
+                wc.Headers.Add("User-Agent: Other");
 
-            var jsonDoc = JsonSerializer.Deserialize<dynamic>(json);
+                string json = "";
+                try
+                {
+                    json = wc.DownloadString("https://api.github.com/repos/schmarxman/split-pdf/releases/latest");
+                }
+                catch (Exception)
+                {
+                }
+
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var tag = json.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(x => x.Contains("tag_name"));
+                    if (!string.IsNullOrEmpty(tag))
+                    {
+                        int start = tag.IndexOf("v") + 1;
+                        var remoteVersion = new Version(tag.Substring(start, tag.LastIndexOf("\"") - start));
+                        if (remoteVersion > version)
+                        {
+                            if (MessageBox.Show("Eine neue Version ist verfügbar. Jetzt herunterladen? (Öffnet den Browser)", "Update verfügbar", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            {
+                                Process.Start(downloadUrl);
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         public static MainWindowViewModel Instance
