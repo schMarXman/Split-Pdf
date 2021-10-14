@@ -92,5 +92,13 @@ namespace Split
                 dc.OnWindowLoaded?.Invoke();
             }
         }
+
+        private void TextBox_Bogenanzahl_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is TextBox box)
+            {
+                box.SelectAll();
+            }
+        }
     }
 }
