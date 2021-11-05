@@ -89,7 +89,7 @@
                         <GridViewColumn Header="Bogenanzahl">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBox Text="{Binding BogenCount, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Width="Auto" HorizontalAlignment="Center" PreviewTextInput="PreviewTextNumericOnly" GotFocus="TextBox_Bogenanzahl_GotFocus"/>
+                                    <TextBox Text="{Binding BogenCount, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Width="Auto" HorizontalAlignment="Center" LostFocus="TextBox_LostFocus" GotFocus="TextBox_Bogenanzahl_GotFocus" KeyUp="TextBox_KeyUp"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

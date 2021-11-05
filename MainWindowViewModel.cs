@@ -286,12 +286,12 @@ namespace Split
             });
         }
 
-        public string GetFilenameFromPattern(string pattern, int bogenCount, int index)
+        public string GetFilenameFromPattern(string pattern, string bogenCount, int index)
         {
             string filename = pattern;
 
             var pairs = PatternValuePairs;
-            pairs["{Bogenanzahl}"] = "" + bogenCount;
+            pairs["{Bogenanzahl}"] = bogenCount;
             pairs["{Index}"] = "" + index;
 
             foreach (var pair in pairs)
@@ -383,7 +383,7 @@ namespace Split
 
             if (ZipDocuments)
             {
-                var zipName = Path.Combine(SelectedOutputDirectory, GetFilenameFromPattern(ZipFileNamePattern, 0, 0) + ".zip");
+                var zipName = Path.Combine(SelectedOutputDirectory, GetFilenameFromPattern(ZipFileNamePattern, "0", 0) + ".zip");
                 SaveDocumentsToZip(splitDocs, zipName);
             }
             else
@@ -485,16 +485,19 @@ namespace Split
 
     public class ResultingFile : INotifyPropertyChanged
     {
-        private int bogenCount = 1;
+        private string bogenCount = "1";
+
+        private MathExpressionParser MathParser = new MathExpressionParser();
 
         public ResultingFile(int index)
         {
             Index = index;
+            MathParser.OnParseSucceeded += (result) => { return (float)Math.Ceiling(result); };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int BogenCount
+        public string BogenCount
         {
             get { return bogenCount; }
             set
@@ -520,6 +523,15 @@ namespace Split
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        internal void EvaluateBogenCount()
+        {
+            float result;
+            if (MathParser.Parse(BogenCount, out result))
+            {
+                BogenCount = "" + result;
             }
         }
     }

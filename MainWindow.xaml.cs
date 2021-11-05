@@ -100,5 +100,23 @@ namespace Split
                 box.SelectAll();
             }
         }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox box && e.Key == Key.Enter)
+            {
+                var dc = box.DataContext as ResultingFile;
+                dc.EvaluateBogenCount();
+            }
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox box)
+            {
+                var dc = box.DataContext as ResultingFile;
+                dc.EvaluateBogenCount();
+            }
+        }
     }
 }
