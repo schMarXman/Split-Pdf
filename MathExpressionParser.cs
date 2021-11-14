@@ -37,7 +37,6 @@ namespace Split
                     break;
                 default:
                     throw new Exception("Unknown operator!");
-                    break;
             }
 
             if (OnParseSucceeded != null)
