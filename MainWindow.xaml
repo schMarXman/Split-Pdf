@@ -77,19 +77,21 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Label Grid.Row="0" Content="Ergebnisdateien:"/>
-            <ListView Name="ResultsListView" Grid.Row="1" ItemsSource="{Binding ResultingFiles}" KeyboardNavigation.TabNavigation="Continue">
+            <ListView Name="ResultsListView" Grid.Row="1" ItemsSource="{Binding ResultingFiles}" SelectionChanged="ResultsListView_SelectionChanged" KeyboardNavigation.TabNavigation="Continue">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="Focusable" Value="False" />
+                        <Setter Property="Focusable" Value="True" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="IsTabStop" Value="False"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Dateiname" DisplayMemberBinding="{Binding FileName}" Width="200"/>
+                        <GridViewColumn Header="Dateiname" DisplayMemberBinding="{Binding FileName}" />
                         <GridViewColumn Header="Bogenanzahl">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBox Text="{Binding BogenCount, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Width="Auto" HorizontalAlignment="Center" LostFocus="TextBox_LostFocus" GotFocus="TextBox_Bogenanzahl_GotFocus" KeyUp="TextBox_KeyUp"/>
+                                    <TextBox Text="{Binding BogenCount, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" GotFocus="TextBox_Bogenanzahl_GotFocus" KeyUp="TextBox_KeyUp"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

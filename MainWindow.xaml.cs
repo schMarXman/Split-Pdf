@@ -107,6 +107,7 @@ namespace Split
             {
                 var dc = box.DataContext as ResultingFile;
                 dc.EvaluateBogenCount();
+                dc.OnBogenCountChanged?.Invoke(dc);
             }
         }
 
@@ -116,6 +117,15 @@ namespace Split
             {
                 var dc = box.DataContext as ResultingFile;
                 dc.EvaluateBogenCount();
+                dc.OnBogenCountChanged?.Invoke(dc);
+            }
+        }
+
+        private void ResultsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel dc && sender is ListView lv)
+            {
+                dc.SelectedResultingFiles = lv.SelectedItems.Cast<ResultingFile>().ToList();
             }
         }
     }

@@ -5,6 +5,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -71,6 +72,8 @@ namespace Split
             FileNamePattern = Properties.Settings.Default.FileNamePattern;
             ZipFileNamePattern = Properties.Settings.Default.ZipFileNamePattern;
         }
+
+        public List<ResultingFile> SelectedResultingFiles { get; internal set; }
 
         public static MainWindowViewModel Instance
         {
@@ -475,11 +478,24 @@ namespace Split
                 int fileCount = (int)Math.Ceiling((float)SelectedPdf.PageCount / SplitAfter);
                 for (int i = 0; i < fileCount; i++)
                 {
-                    files.Add(new ResultingFile(i + 1));
+                    var rf = new ResultingFile(i + 1);
+                    rf.OnBogenCountChanged += UpdateSelectedResultingFiles;
+                    files.Add(rf);
                 }
             }
 
             ResultingFiles = files;
+        }
+
+        private void UpdateSelectedResultingFiles(ResultingFile sender)
+        {
+            if (SelectedResultingFiles != null)
+            {
+                foreach (var selectedRF in SelectedResultingFiles)
+                {
+                    selectedRF.BogenCount = sender.BogenCount;
+                } 
+            }
         }
     }
 
@@ -496,6 +512,8 @@ namespace Split
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public Action<ResultingFile> OnBogenCountChanged;
 
         public string BogenCount
         {
