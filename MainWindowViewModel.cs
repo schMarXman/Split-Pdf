@@ -64,7 +64,7 @@ namespace Split
             OnWindowLoaded += InitWindowLoaded;
 
             OpenPdfCommand = new RelayCommand(OpenPdfDialog);
-            ProcessPdfCommand = new RelayCommand(ProcessPdf, () => { return !string.IsNullOrEmpty(SelectedOutputDirectory) && SelectedPdf != null && !processRunning; });
+            ProcessPdfCommand = new RelayCommand(ProcessPdf, () => !string.IsNullOrEmpty(SelectedOutputDirectory) && SelectedPdf != null && !processRunning);
             SelectOutputDirectoryCommand = new RelayCommand(SelectOutputDirectory);
 
             SelectedOutputDirectory = Properties.Settings.Default.OutputDirectory;
